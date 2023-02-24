@@ -1,5 +1,8 @@
 # BATCAM FX C# Example 
 
+한국어 README는 [여기](README-KR.md)에서 확인할 수 있습니다.<br>
+日本語のREADMEは[こちら](README-JP.md)
+
 ## Summary
 
 This repository provides an example of a WebSocket connection required for BATCAM FX development, and method for visualizing BF Data sent from BATCAM FX.
