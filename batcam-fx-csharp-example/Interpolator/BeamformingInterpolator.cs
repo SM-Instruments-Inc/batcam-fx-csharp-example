@@ -86,14 +86,8 @@ namespace batcam_fx_csharp_example.Interpolator {
         /// <param name="gain">Microphone gain value set in BATCAM FX.</param>
         /// <returns></returns>
         private float ConvertRawTodBScale(float rawData, int gain) {
-            float target = gain switch {
-                0 => 0,
-                10 => 10,
-                100 => 20,
-                1000 => 30,
-                _ => 0,
-            };
-            return rawData / (target * target) * 0.00031921f;
+            gain = gain == 0 ? 1 : gain; // Prevents gain calculation with zero
+            return rawData / (gain * gain) * 0.00031921f;
         }
 
         /// <summary>
