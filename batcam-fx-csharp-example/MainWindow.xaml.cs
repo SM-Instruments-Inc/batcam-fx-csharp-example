@@ -8,9 +8,12 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using OpenCvSharp.WpfExtensions;
+using System.ComponentModel;
+using System.IO;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WebSocketSharp;
+using ErrorEventArgs = WebSocketSharp.ErrorEventArgs;
 
 namespace batcam_fx_csharp_example {
     /// <summary>
@@ -19,9 +22,9 @@ namespace batcam_fx_csharp_example {
     public partial class MainWindow {
         
         // MARK: - WebSocket Variables -------------------------------------------------------
-        private const string CameraIp = "";
-        private const string Username = "";
-        private const string Password = "";
+        private const string CameraIp = "192.168.1.244";
+        private const string Username = "admin";
+        private const string Password = "admin";
 
         private readonly WebSocketSharp.WebSocket _webSocket;
         private bool _shouldCloseWebsocket = false;
@@ -30,6 +33,12 @@ namespace batcam_fx_csharp_example {
         // MARK: - Interpolation Variables ---------------------------------------------------
         private readonly BeamformingInterpolator _interpolator;
         private readonly OpenCvSharp.Size _destinationSize = new(1600, 1200);
+        // MARK: -----------------------------------------------------------------------------
+        
+        // MARK: - Recording Variables -------------------------------------------------------
+        private bool _isRecordEnabled = false;
+        private readonly Stopwatch _recordStopWatch = new();
+        private BeamformingArchive _beamformingArchive = new();
         // MARK: -----------------------------------------------------------------------------
 
         public MainWindow() {
@@ -106,6 +115,12 @@ namespace batcam_fx_csharp_example {
             try {
                 // Converts json response into Object<FxWebSocketResponse>
                 var message = JsonConvert.DeserializeObject<FxWebSocketResponse>(e.Data);
+
+                if (_isRecordEnabled) {
+                    _beamformingArchive.BeamformingData.Add(message.BeamformingData);
+                    _beamformingArchive.Gain.Add(message.Gain);
+                }
+                
                 Mat? matrix = null;
                 await Task.Run(() => 
                     // Creates matrix using BeamformingInterpolator. 
@@ -118,6 +133,9 @@ namespace batcam_fx_csharp_example {
                     // This example uses Gray256 for applying color map, you have to apply your own color.
                     var bitmap = matrix.ToWriteableBitmap(0, 0, PixelFormats.Indexed8, BitmapPalettes.Gray256);
                     ImageView.Source = bitmap;
+                    if (_isRecordEnabled) {
+                        TotalRecordTime.Text = _recordStopWatch.Elapsed.ToString();
+                    }
                 });
             } catch (Exception exception) {
                 Debug.WriteLine($"[WebSocket/Message] Error: {exception.Message}: {exception.StackTrace ?? string.Empty}");
@@ -173,7 +191,7 @@ namespace batcam_fx_csharp_example {
         }
         // MARK: -----------------------------------------------------------------------------
 
-        // XAML Update functions -------------------------------------------------------------
+        // MARK: - XAML Update functions -----------------------------------------------------
         /// <summary>
         /// Create a TextBlock near the slider to showing slider's value,
         /// and notice the value to BeamformingInterpolator for its calculation. 
@@ -199,6 +217,25 @@ namespace batcam_fx_csharp_example {
             }
 
             if (textBlockToDisplay != null) textBlockToDisplay.Text = $"{tag}: {value}";
+        }
+
+        private void OnRecordButtonClick(object sender, RoutedEventArgs e) {
+            _isRecordEnabled = !_isRecordEnabled;
+            RecordStartButton.IsEnabled = _isRecordEnabled == false;
+            RecordStopButton.IsEnabled = _isRecordEnabled;
+
+            if (_isRecordEnabled) {
+                _beamformingArchive = new BeamformingArchive(Guid.NewGuid().ToString());
+                _recordStopWatch.Reset();
+                _recordStopWatch.Start();
+            } else {
+                _recordStopWatch.Stop();
+                var message = JsonConvert.SerializeObject(_beamformingArchive);
+                var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                var savePath = Path.Combine(desktopPath, $"{_beamformingArchive.JobId}.json");
+                File.WriteAllText(savePath, message);
+                GC.Collect();
+            }
         }
         // MARK: -----------------------------------------------------------------------------
     }

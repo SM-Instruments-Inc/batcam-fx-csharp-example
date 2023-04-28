@@ -10,6 +10,8 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
         <Grid Background="Black" Grid.Row="0">
             <Image x:Name="ImageView" Stretch="Uniform"/>
@@ -28,6 +30,38 @@
                 <TextBlock x:Name="TbRange" Text="Range" Margin="5,0,0,0"/>
                 <Slider Tag="Range" Minimum="0" Maximum="10" IsSnapToTickEnabled="True" TickFrequency="0.1" Value="3" ValueChanged="OnSliderValueChanged"/>
             </StackPanel>
+        </Grid>
+        <Grid Grid.Row="2" Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Button 
+                Grid.Column="0" 
+                Margin="5"
+                x:Name="RecordStartButton"
+                Tag = "StartButton"
+                IsEnabled="True"
+                Click="OnRecordButtonClick"
+                Content="Start Record"
+            />
+            <Button 
+                Grid.Column="1" 
+                Margin="5"
+                x:Name="RecordStopButton"
+                Tag = "StopButton"
+                IsEnabled="False"
+                Click="OnRecordButtonClick"
+                Content="Stop Record"
+            />
+        </Grid>
+        <Grid Grid.Row="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Grid.Column="0" Text="Total Record Time:" Margin="5,0,0,0"/>
+            <TextBlock Grid.Column="1" x:Name="TotalRecordTime" Text="0.0s" Margin="5,0,0,0"/>
         </Grid>
     </Grid>
 </Window>
