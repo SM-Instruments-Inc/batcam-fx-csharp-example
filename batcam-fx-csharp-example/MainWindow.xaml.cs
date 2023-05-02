@@ -22,9 +22,9 @@ namespace batcam_fx_csharp_example {
     public partial class MainWindow {
         
         // MARK: - WebSocket Variables -------------------------------------------------------
-        private const string CameraIp = "192.168.1.244";
-        private const string Username = "admin";
-        private const string Password = "admin";
+        private const string CameraIp = "";
+        private const string Username = "";
+        private const string Password = "";
 
         private readonly WebSocketSharp.WebSocket _webSocket;
         private bool _shouldCloseWebsocket = false;
@@ -218,7 +218,13 @@ namespace batcam_fx_csharp_example {
 
             if (textBlockToDisplay != null) textBlockToDisplay.Text = $"{tag}: {value}";
         }
-
+        
+        /// <summary>
+        /// Detect when the record button has been clicked.
+        /// This method starts or stops recording feature. 
+        /// </summary>
+        /// <param name="sender">The button defined in MainWindow.xaml.</param>
+        /// <param name="e">EventArguments about button click event.</param>
         private void OnRecordButtonClick(object sender, RoutedEventArgs e) {
             _isRecordEnabled = !_isRecordEnabled;
             RecordStartButton.IsEnabled = _isRecordEnabled == false;
